@@ -96,49 +96,88 @@ class SentimentAnalysisService {
   }
 
   private analyzeWithKeywords(text: string): SentimentResult {
-    // Fallback keyword-based sentiment analysis
+    // Enhanced keyword-based sentiment analysis with more comprehensive word lists
     const positiveWords = [
       'good', 'great', 'excellent', 'amazing', 'fantastic', 'wonderful',
       'brilliant', 'outstanding', 'superb', 'magnificent', 'perfect',
-      'love', 'like', 'enjoy', 'impressive', 'beautiful', 'awesome'
+      'love', 'like', 'enjoy', 'impressive', 'beautiful', 'awesome',
+      'best', 'incredible', 'phenomenal', 'marvelous', 'spectacular',
+      'divine', 'flawless', 'masterpiece', 'epic', 'thrilling',
+      'captivating', 'engaging', 'delightful', 'charming', 'stunning',
+      'breathtaking', 'remarkable', 'exceptional', 'extraordinary',
+      'brilliant', 'genius', 'powerful', 'moving', 'touching',
+      'heartwarming', 'inspiring', 'uplifting', 'refreshing',
+      'entertaining', 'hilarious', 'funny', 'witty', 'clever'
     ];
 
     const negativeWords = [
       'bad', 'terrible', 'awful', 'horrible', 'worst', 'hate',
       'dislike', 'disappointing', 'boring', 'poor', 'waste',
-      'stupid', 'ridiculous', 'pathetic', 'useless', 'annoying'
+      'stupid', 'ridiculous', 'pathetic', 'useless', 'annoying',
+      'dull', 'bland', 'mediocre', 'predictable', 'cliche',
+      'overrated', 'underwhelming', 'confusing', 'messy', 'chaotic',
+      'painful', 'torturous', 'unbearable', 'cringe', 'awkward',
+      'forced', 'contrived', 'artificial', 'fake', 'shallow',
+      'pointless', 'meaningless', 'empty', 'hollow', 'weak',
+      'failed', 'disaster', 'mess', 'garbage', 'trash'
     ];
 
-    const words = text.toLowerCase().split(/\s+/);
+    // Enhanced analysis with word weights and context
+    const words = text.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
     let positiveScore = 0;
     let negativeScore = 0;
+    let totalWords = words.length;
 
-    for (const word of words) {
+    // Analyze sentiment with weighted scoring
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const prevWord = i > 0 ? words[i - 1] : '';
+      const nextWord = i < words.length - 1 ? words[i + 1] : '';
+      
+      // Check for negation words
+      const isNegated = ['not', 'no', 'never', 'dont', 'wont', 'cant', 'isnt', 'wasnt', 'werent'].includes(prevWord);
+      
       if (positiveWords.includes(word)) {
-        positiveScore++;
+        positiveScore += isNegated ? -1.5 : 1.0;
       } else if (negativeWords.includes(word)) {
-        negativeScore++;
+        negativeScore += isNegated ? -1.5 : 1.0;
+      }
+      
+      // Check for intensity modifiers
+      if (['very', 'really', 'extremely', 'absolutely', 'completely'].includes(prevWord)) {
+        if (positiveWords.includes(word)) positiveScore += 0.5;
+        if (negativeWords.includes(word)) negativeScore += 0.5;
       }
     }
 
-    const totalScore = positiveScore + negativeScore;
-    if (totalScore === 0) {
-      // Neutral case, default to positive with low confidence
+    // Normalize scores
+    const totalSentimentWords = Math.max(1, Math.abs(positiveScore) + Math.abs(negativeScore));
+    const normalizedPositive = Math.max(0, positiveScore) / totalSentimentWords;
+    const normalizedNegative = Math.max(0, negativeScore) / totalSentimentWords;
+    
+    // Calculate final sentiment
+    if (normalizedPositive === 0 && normalizedNegative === 0) {
+      // Neutral case - analyze overall tone
+      const neutralScore = 0.55; // Slightly positive bias for neutral reviews
       return {
         sentiment: 'positive',
-        confidence: 0.5,
-        positiveScore: 0.5,
-        negativeScore: 0.5,
+        confidence: 0.6,
+        positiveScore: neutralScore,
+        negativeScore: 1 - neutralScore,
       };
     }
 
-    const positiveRatio = positiveScore / totalScore;
+    const positiveRatio = normalizedPositive / (normalizedPositive + normalizedNegative);
     const sentiment = positiveRatio > 0.5 ? 'positive' : 'negative';
-    const confidence = Math.abs(positiveRatio - 0.5) * 2;
+    
+    // Calculate confidence based on score difference and word count
+    const scoreDifference = Math.abs(normalizedPositive - normalizedNegative);
+    const wordCountFactor = Math.min(1, totalWords / 10); // More confidence with more words
+    const confidence = Math.min(0.95, Math.max(0.65, (scoreDifference + wordCountFactor) * 0.8));
 
     return {
       sentiment,
-      confidence: Math.max(0.6, confidence), // Minimum confidence of 60%
+      confidence,
       positiveScore: positiveRatio,
       negativeScore: 1 - positiveRatio,
     };

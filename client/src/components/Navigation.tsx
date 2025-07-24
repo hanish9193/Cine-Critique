@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function Navigation() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth() as {
+    user: { profileImageUrl?: string; firstName?: string; email?: string } | null;
+    isAuthenticated: boolean;
+  };
 
   const handleLogout = () => {
     window.location.href = "/api/logout";

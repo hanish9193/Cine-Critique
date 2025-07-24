@@ -30,8 +30,6 @@ export default function ReviewModal({ movieId, onClose }: ReviewModalProps) {
   const queryClient = useQueryClient();
   
   const [reviewText, setReviewText] = useState("");
-  const [rating, setRating] = useState(0);
-  const [hoveredRating, setHoveredRating] = useState(0);
   const [sentimentResult, setSentimentResult] = useState<SentimentResult | null>(null);
 
   // Fetch movie data
@@ -40,12 +38,12 @@ export default function ReviewModal({ movieId, onClose }: ReviewModalProps) {
   });
 
   // Check if user already reviewed this movie
-  const { data: userReviews } = useQuery({
+  const { data: userReviews } = useQuery<Array<{ movieId: number }>>({
     queryKey: ["/api/reviews/user"],
     enabled: isAuthenticated,
   });
 
-  const hasReviewed = userReviews?.some((review: any) => review.movieId === movieId);
+  const hasReviewed = userReviews?.some((review) => review.movieId === movieId);
 
   // Sentiment analysis mutation
   const sentimentMutation = useMutation({
@@ -80,6 +78,11 @@ export default function ReviewModal({ movieId, onClose }: ReviewModalProps) {
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!sentimentResult) throw new Error("Sentiment analysis required");
+      
+      // Auto-assign rating based on sentiment and confidence
+      const rating = sentimentResult.sentiment === 'positive' 
+        ? Math.max(3, Math.round(3 + (sentimentResult.confidence * 2))) // 3-5 stars for positive
+        : Math.max(1, Math.round(3 - (sentimentResult.confidence * 2))); // 1-3 stars for negative
       
       const response = await apiRequest("POST", "/api/reviews", {
         movieId,
@@ -137,14 +140,6 @@ export default function ReviewModal({ movieId, onClose }: ReviewModalProps) {
       toast({
         title: "Error",
         description: "Please enter a review.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (rating === 0) {
-      toast({
-        title: "Error",
-        description: "Please select a rating.",
         variant: "destructive",
       });
       return;
@@ -229,32 +224,36 @@ export default function ReviewModal({ movieId, onClose }: ReviewModalProps) {
               </div>
             </div>
 
-            {/* Rating */}
+            {/* AI Auto-Rating Info */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-white">Rating</label>
-              <div className="flex items-center space-x-2">
-                <div className="flex space-x-1">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setRating(i + 1)}
-                      onMouseEnter={() => setHoveredRating(i + 1)}
-                      onMouseLeave={() => setHoveredRating(0)}
-                      className="transition-colors"
-                    >
-                      <Star
-                        className={`w-6 h-6 ${
-                          i < (hoveredRating || rating)
-                            ? "text-[var(--cinema-gold)] fill-current"
-                            : "text-gray-400"
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-                <span className="ml-4 text-gray-400">
-                  {rating > 0 ? `${rating} star${rating !== 1 ? 's' : ''}` : 'Click to rate'}
-                </span>
+              <label className="block text-sm font-medium mb-2 text-white">AI Auto-Rating</label>
+              <div className="bg-[var(--cinema-dark)] border border-gray-600 rounded-lg p-4">
+                <p className="text-gray-300 text-sm">
+                  <Brain className="inline w-4 h-4 mr-2 text-[var(--cinema-gold)]" />
+                  The AI will automatically determine the star rating (1-5) based on sentiment analysis of your review.
+                </p>
+                {sentimentResult && (
+                  <div className="mt-2 flex items-center">
+                    <span className="text-sm text-gray-400 mr-2">Predicted Rating:</span>
+                    <div className="flex space-x-1">
+                      {Array.from({ length: 5 }, (_, i) => {
+                        const predictedRating = sentimentResult.sentiment === 'positive' 
+                          ? Math.max(3, Math.round(3 + (sentimentResult.confidence * 2)))
+                          : Math.max(1, Math.round(3 - (sentimentResult.confidence * 2)));
+                        return (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < predictedRating
+                                ? "text-[var(--cinema-gold)] fill-current"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -314,7 +313,7 @@ export default function ReviewModal({ movieId, onClose }: ReviewModalProps) {
               </Button>
               <Button
                 onClick={handleSubmitReview}
-                disabled={submitMutation.isPending || !sentimentResult || rating === 0}
+                disabled={submitMutation.isPending || !sentimentResult}
                 className="flex-1 bg-[var(--cinema-gold)] text-black hover:bg-yellow-400"
               >
                 {submitMutation.isPending ? (

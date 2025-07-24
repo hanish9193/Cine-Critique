@@ -117,6 +117,9 @@ export const insertMovieSchema = createInsertSchema(movies).omit({
 export const insertReviewSchema = createInsertSchema(reviews).omit({
   id: true,
   createdAt: true,
+}).extend({
+  movieId: z.number(),
+  rating: z.number().min(1).max(5),
 });
 
 export const insertUserPreferenceSchema = createInsertSchema(userPreferences).omit({

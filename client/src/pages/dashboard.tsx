@@ -29,7 +29,12 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: userStats } = useQuery({
+  const { data: userStats } = useQuery<{
+    totalReviews: number;
+    positiveReviews: number;
+    negativeReviews: number;
+    avgRating: number;
+  }>({
     queryKey: ["/api/stats/user"],
     retry: false,
     enabled: isAuthenticated,
@@ -55,7 +60,7 @@ export default function Dashboard() {
     );
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
