@@ -215,10 +215,10 @@ export default function ReviewModal({ movieId, onClose }: ReviewModalProps) {
                 onChange={(e) => setReviewText(e.target.value)}
                 className="w-full h-32 bg-[var(--cinema-dark)] border-gray-600 text-white placeholder-gray-400 focus:border-[var(--cinema-gold)] resize-none"
                 placeholder="Share your thoughts about this movie..."
-                maxLength={500}
+                maxLength={2000}
               />
               <div className="text-sm text-gray-400 mt-1">
-                {reviewText.length}/500 characters
+                {reviewText.length}/2000 characters
               </div>
             </div>
 

@@ -7,6 +7,8 @@ CineReview is a modern full-stack movie review platform focused on Indian cinema
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Review word limit: Increased to 2000 characters for detailed reviews.
+Dashboard design: Interactive elements preferred over basic statistics.
 
 ## System Architecture
 
@@ -113,3 +115,16 @@ The application uses PostgreSQL with the following main entities:
 - `ISSUER_URL`: OpenID Connect provider URL
 
 The architecture emphasizes type safety, modern development practices, and scalable deployment while maintaining a focus on the Indian cinema domain with sophisticated AI-powered features.
+
+## Recent Changes (July 25, 2025)
+
+- **Enhanced Sentiment Analysis**: Improved keyword detection, context analysis, and scoring variation for more realistic results
+- **Removed Star Rating System**: Completely eliminated star ratings in favor of AI-determined liked/disliked sentiment
+- **Increased Review Word Limit**: Extended from 500 to 2000 characters to allow detailed movie reviews
+- **Interactive Dashboard**: Replaced basic statistics with engaging elements including:
+  - Genre preference analysis with sentiment indicators
+  - Review streak tracking and user activity timeline
+  - Cinema personality insights and watch time estimates
+  - Interactive timeframe filters and enhanced visual design
+- **Database Optimization**: Fixed user preference constraint handling and improved review submission reliability
+- **UI Improvements**: Simplified interface to focus on AI-powered sentiment rather than manual ratings

@@ -166,13 +166,9 @@ class SentimentAnalysisService {
     }
 
     // Normalize scores
-    console.log('Raw scores - Positive:', positiveScore, 'Negative:', negativeScore, 'Total words:', totalWords);
-    
     const totalSentimentWords = Math.max(1, Math.abs(positiveScore) + Math.abs(negativeScore));
     const normalizedPositive = Math.max(0, positiveScore) / totalSentimentWords;
     const normalizedNegative = Math.max(0, negativeScore) / totalSentimentWords;
-    
-    console.log('Normalized scores - Positive:', normalizedPositive, 'Negative:', normalizedNegative);
     
     // Calculate final sentiment with more nuanced scoring
     if (normalizedPositive === 0 && normalizedNegative === 0) {
@@ -188,8 +184,6 @@ class SentimentAnalysisService {
 
     const positiveRatio = normalizedPositive / (normalizedPositive + normalizedNegative);
     const sentiment = positiveRatio > 0.5 ? 'positive' : 'negative';
-    
-    console.log('Final calculation - Positive ratio:', positiveRatio, 'Sentiment:', sentiment);
     
     // More realistic confidence calculation
     const scoreDifference = Math.abs(normalizedPositive - normalizedNegative);
