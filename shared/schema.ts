@@ -9,6 +9,7 @@ import {
   integer,
   decimal,
   boolean,
+  real,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -57,7 +58,7 @@ export const reviews = pgTable("reviews", {
   content: text("content").notNull(),
   rating: integer("rating").notNull(), // 1-5 stars
   sentiment: varchar("sentiment", { length: 20 }).notNull(), // 'positive' or 'negative'
-  sentimentConfidence: decimal("sentiment_confidence", { precision: 5, scale: 4 }),
+  sentimentConfidence: real("sentiment_confidence"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -117,9 +118,11 @@ export const insertMovieSchema = createInsertSchema(movies).omit({
 export const insertReviewSchema = createInsertSchema(reviews).omit({
   id: true,
   createdAt: true,
+  userId: true,
 }).extend({
   movieId: z.number(),
   rating: z.number().min(1).max(5),
+  sentimentConfidence: z.number().min(0).max(1),
 });
 
 export const insertUserPreferenceSchema = createInsertSchema(userPreferences).omit({
