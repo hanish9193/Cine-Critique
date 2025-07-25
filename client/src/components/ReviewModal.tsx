@@ -79,10 +79,8 @@ export default function ReviewModal({ movieId, onClose }: ReviewModalProps) {
     mutationFn: async () => {
       if (!sentimentResult) throw new Error("Sentiment analysis required");
       
-      // Auto-assign rating based on sentiment and confidence
-      const rating = sentimentResult.sentiment === 'positive' 
-        ? Math.max(3, Math.round(3 + (sentimentResult.confidence * 2))) // 3-5 stars for positive
-        : Math.max(1, Math.round(3 - (sentimentResult.confidence * 2))); // 1-3 stars for negative
+      // Simple rating based on sentiment (no stars displayed to user)
+      const rating = sentimentResult.sentiment === 'positive' ? 4 : 2;
       
       const response = await apiRequest("POST", "/api/reviews", {
         movieId,
@@ -224,76 +222,41 @@ export default function ReviewModal({ movieId, onClose }: ReviewModalProps) {
               </div>
             </div>
 
-            {/* AI Auto-Rating Info */}
+            {/* AI Sentiment Info */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-white">AI Auto-Rating</label>
+              <label className="block text-sm font-medium mb-2 text-white">AI Review Analysis</label>
               <div className="bg-[var(--cinema-dark)] border border-gray-600 rounded-lg p-4">
                 <p className="text-gray-300 text-sm">
                   <Brain className="inline w-4 h-4 mr-2 text-[var(--cinema-gold)]" />
-                  The AI will automatically determine the star rating (1-5) based on sentiment analysis of your review.
+                  AI analyzes your review to understand if you liked or disliked the movie, helping build personalized recommendations.
                 </p>
-                {sentimentResult && (
-                  <div className="mt-2 flex items-center">
-                    <span className="text-sm text-gray-400 mr-2">Predicted Rating:</span>
-                    <div className="flex space-x-1">
-                      {Array.from({ length: 5 }, (_, i) => {
-                        const predictedRating = sentimentResult.sentiment === 'positive' 
-                          ? Math.max(3, Math.round(3 + (sentimentResult.confidence * 2)))
-                          : Math.max(1, Math.round(3 - (sentimentResult.confidence * 2)));
-                        return (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < predictedRating
-                                ? "text-[var(--cinema-gold)] fill-current"
-                                : "text-gray-400"
-                            }`}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
             {/* Sentiment Analysis Result */}
             {sentimentResult && (
               <div>
-                <label className="block text-sm font-medium mb-2 text-white">AI Sentiment Analysis</label>
-                <Card className="bg-[var(--cinema-dark)] border-gray-600">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-white">Sentiment:</span>
-                      <Badge
-                        variant="secondary"
-                        className={
-                          sentimentResult.sentiment === 'positive'
-                            ? 'bg-[var(--sentiment-positive)] text-white'
-                            : 'bg-[var(--sentiment-negative)] text-white'
-                        }
-                      >
-                        {sentimentResult.sentiment.charAt(0).toUpperCase() + sentimentResult.sentiment.slice(1)}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-white">Confidence:</span>
-                      <span className="text-[var(--cinema-gold)] font-medium">
-                        {(sentimentResult.confidence * 100).toFixed(1)}%
+                <label className="block text-sm font-medium mb-2 text-white">AI Analysis Result</label>
+                <div className="bg-[var(--cinema-dark)] border border-gray-600 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      {sentimentResult.sentiment === 'positive' ? (
+                        <ThumbsUp className="w-5 h-5 text-green-400 mr-2" />
+                      ) : (
+                        <ThumbsDown className="w-5 h-5 text-red-400 mr-2" />
+                      )}
+                      <span className="text-white font-medium">
+                        You {sentimentResult.sentiment === 'positive' ? 'liked' : 'disliked'} this movie
                       </span>
                     </div>
-                    <div className="mt-3">
-                      <div className="flex justify-between text-sm text-gray-400 mb-1">
-                        <span>Positive</span>
-                        <span>Negative</span>
+                    <div className="text-right">
+                      <div className="text-sm text-gray-400">Confidence</div>
+                      <div className="text-[var(--cinema-gold)] font-medium">
+                        {(sentimentResult.confidence * 100).toFixed(0)}%
                       </div>
-                      <Progress
-                        value={sentimentResult.positiveScore * 100}
-                        className="h-2"
-                      />
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             )}
 
