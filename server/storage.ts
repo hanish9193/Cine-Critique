@@ -97,7 +97,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Review operations
-  async createReview(review: InsertReview): Promise<Review> {
+  async createReview(review: InsertReview & { userId: string }): Promise<Review> {
+    console.log('Creating review with data:', review);
     const [newReview] = await db.insert(reviews).values(review).returning();
     return newReview;
   }

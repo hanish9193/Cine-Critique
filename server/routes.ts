@@ -67,7 +67,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/reviews', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const reviewData = insertReviewSchema.parse({ ...req.body, userId });
+      console.log('User ID from auth:', userId);
+      console.log('Request body:', req.body);
+      
+      const reviewData = insertReviewSchema.parse(req.body);
+      const reviewWithUser = { ...reviewData, userId };
+      
+      console.log('Review data with user:', reviewWithUser);
       
       // Check if user already reviewed this movie
       const existingReview = await storage.getUserReviewForMovie(userId, reviewData.movieId);
@@ -75,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "You have already reviewed this movie" });
       }
       
-      const review = await storage.createReview(reviewData);
+      const review = await storage.createReview(reviewWithUser);
       
       // Create or update user preference based on sentiment
       const preference = {
