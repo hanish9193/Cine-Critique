@@ -3,6 +3,12 @@
 # 🎬 CineReview
 ### *AI-Powered Movie Review Platform with Scratch-Built Neural Network*
 
+<img src="Dasboard.png" width="900" alt="CineReview Interactive Dashboard"/>
+<br/>
+<sub><i>🎯 Live dashboard showcasing our scratch-built AI sentiment analysis in action</i></sub>
+
+---
+
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Try_Now-ff6b6b?style=for-the-badge&logo=vercel)](https://your-demo-url.com)
 [![100% Custom AI](https://img.shields.io/badge/🧠_AI_Model-Built_From_Scratch-4ecdc4?style=for-the-badge&logo=tensorflow)](#-custom-built-ai-architecture)
 [![Indian Cinema](https://img.shields.io/badge/🎭_Focus-Indian_Cinema-f7931e?style=for-the-badge&logo=imdb)](#-indian-cinema-collection)
